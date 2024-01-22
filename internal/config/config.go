@@ -7,6 +7,11 @@ import (
 
 type (
 	Config struct {
+		Postgres PostgresConfig
+	}
+
+	PostgresConfig struct {
+		URI string `envconfig:"POSTGRES_URI"`
 	}
 )
 
