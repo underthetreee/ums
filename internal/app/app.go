@@ -13,7 +13,10 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/underthetreee/ums/internal/config"
+	"github.com/underthetreee/ums/internal/handler"
+	"github.com/underthetreee/ums/internal/repository"
 	"github.com/underthetreee/ums/internal/server"
+	"github.com/underthetreee/ums/internal/service"
 )
 
 func Run() error {
@@ -28,7 +31,12 @@ func Run() error {
 	}
 	defer db.Close()
 
-	srv := server.NewServer(cfg)
+	userService := service.NewUserService(
+		repository.NewUserRepo(db),
+	)
+
+	handler := handler.NewHandler(userService)
+	srv := server.NewServer(cfg, handler)
 
 	var (
 		quitch = make(chan os.Signal, 1)
