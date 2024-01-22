@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"log"
+
+	"github.com/underthetreee/ums/internal/app"
+)
 
 func main() {
-	fmt.Println("init")
+	if err := app.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
