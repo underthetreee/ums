@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -8,10 +10,17 @@ import (
 type (
 	Config struct {
 		Postgres PostgresConfig
+		HTTP     HTTPConfig
 	}
 
 	PostgresConfig struct {
 		URI string `envconfig:"POSTGRES_URI"`
+	}
+
+	HTTPConfig struct {
+		Port         string        `envconfig:"HTTP_PORT"`
+		ReadTimeout  time.Duration `envconfig:"HTTP_READ_TIMEOUT"`
+		WriteTimeout time.Duration `envconfig:"HTTP_WRITE_TIMEOUT"`
 	}
 )
 
