@@ -1,26 +1,29 @@
-package handler
+package v1
 
 import (
 	"context"
 	"encoding/json"
 	"net/http"
 
-	"github.com/underthetreee/ums/internal/domain"
-	"github.com/underthetreee/ums/internal/service"
+	"github.com/underthetreee/ums/internal/model"
 )
 
-type UserHandler struct {
-	service service.User
+type UserService interface {
+	Register(ctx context.Context, input model.UserRegisterInput) error
 }
 
-func NewUserHandler(service service.User) *UserHandler {
+type UserHandler struct {
+	service UserService
+}
+
+func NewUserHandler(service UserService) *UserHandler {
 	return &UserHandler{
 		service: service,
 	}
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var input domain.UserRegisterInput
+	var input model.UserRegisterInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 	}

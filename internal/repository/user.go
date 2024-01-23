@@ -4,29 +4,21 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/underthetreee/ums/internal/domain"
+	"github.com/underthetreee/ums/internal/model"
 )
 
-var _ User = &UserRepo{}
-
-type User interface {
-	Create(ctx context.Context, user domain.User) error
-}
-
-type UserRepo struct {
+type UserRepository struct {
 	db *sqlx.DB
 }
 
-func NewUserRepo(db *sqlx.DB) *UserRepo {
-	return &UserRepo{
+func NewUserRepository(db *sqlx.DB) *UserRepository {
+	return &UserRepository{
 		db: db,
 	}
 }
 
-func (r *UserRepo) Create(ctx context.Context, user domain.User) error {
-	user.ID = uuid.New()
+func (r *UserRepository) Create(ctx context.Context, user model.User) error {
 	fmt.Printf("%+v\n", user)
 	return nil
 }

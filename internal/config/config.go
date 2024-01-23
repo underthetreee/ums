@@ -9,15 +9,15 @@ import (
 
 type (
 	Config struct {
-		Postgres PostgresConfig
-		HTTP     HTTPConfig
+		Postgres Postgres
+		HTTP     HTTP
 	}
 
-	PostgresConfig struct {
+	Postgres struct {
 		URI string `envconfig:"POSTGRES_URI"`
 	}
 
-	HTTPConfig struct {
+	HTTP struct {
 		Port         string        `envconfig:"HTTP_PORT"`
 		ReadTimeout  time.Duration `envconfig:"HTTP_READ_TIMEOUT"`
 		WriteTimeout time.Duration `envconfig:"HTTP_WRITE_TIMEOUT"`

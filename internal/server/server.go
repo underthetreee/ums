@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/underthetreee/ums/internal/config"
 )
 
@@ -12,7 +11,7 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewServer(cfg *config.Config, router *chi.Mux) *Server {
+func NewServer(cfg *config.Config, router http.Handler) *Server {
 	return &Server{
 		httpServer: &http.Server{
 			Addr:         ":" + cfg.HTTP.Port,
