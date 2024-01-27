@@ -13,6 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/underthetreee/ums/internal/config"
+	handler "github.com/underthetreee/ums/internal/http"
 	"github.com/underthetreee/ums/internal/server"
 )
 
@@ -28,8 +29,8 @@ func Run() error {
 	}
 	defer db.Close()
 
-	router := NewRouter(db)
-	srv := server.NewServer(cfg, router)
+	handler := handler.NewHandler(db)
+	srv := server.NewServer(cfg, handler)
 
 	var (
 		quitch = make(chan os.Signal, 1)

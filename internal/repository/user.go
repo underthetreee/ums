@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/underthetreee/ums/internal/model"
@@ -18,7 +17,27 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 	}
 }
 
+var schema = `
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    password TEXT NOT NULL
+);
+`
+
 func (r *UserRepository) Create(ctx context.Context, user model.User) error {
-	fmt.Printf("%+v\n", user)
+	// temp
+	r.db.MustExec(schema)
+
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec("INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4)",
+		user.ID, user.Name, user.Email, user.Password)
+	if err != nil {
+		return err
+	}
 	return nil
 }
