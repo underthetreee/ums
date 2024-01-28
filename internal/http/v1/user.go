@@ -6,12 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/render"
 	"github.com/underthetreee/ums/internal/model"
 )
 
 type UserService interface {
-	Register(ctx context.Context, input model.UserRegisterInput) error
+	Register(ctx context.Context, input model.UserRegisterInput) (string, error)
 }
 
 type UserHandler struct {
@@ -27,11 +26,18 @@ func NewUserHandler(service UserService) *UserHandler {
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var input model.UserRegisterInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		render.JSON(w, r, "invalid json")
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		log.Println(err)
 	}
-	if err := h.service.Register(r.Context(), input); err != nil {
+	token, err := h.service.Register(r.Context(), input)
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		log.Println(err)
+	}
+
+	response := map[string]string{"token": token}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		log.Println(err)
 	}

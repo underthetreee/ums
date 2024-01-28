@@ -39,5 +39,10 @@ func (r *UserRepository) Create(ctx context.Context, user model.User) error {
 	if err != nil {
 		return err
 	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+
+	}
 	return nil
 }

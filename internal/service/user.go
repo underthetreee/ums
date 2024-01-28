@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/underthetreee/ums/internal/auth"
 	"github.com/underthetreee/ums/internal/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository interface {
@@ -21,15 +24,26 @@ func NewUserService(repo UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) Register(ctx context.Context, input model.UserRegisterInput) error {
+func (s *UserService) Register(ctx context.Context, input model.UserRegisterInput) (string, error) {
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+
 	user := model.User{
 		ID:       uuid.New(),
 		Name:     input.Name,
 		Email:    input.Email,
-		Password: input.Password,
+		Password: string(hashedPass),
 	}
+
 	if err := s.repo.Create(ctx, user); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+
+	token, err := auth.NewToken(user.ID.String(), 1*time.Hour)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
