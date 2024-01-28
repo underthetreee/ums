@@ -29,6 +29,8 @@ func Run() error {
 	}
 	defer db.Close()
 
+	seedUsersTable(db)
+
 	handler := handler.NewHandler(db)
 	srv := server.NewServer(cfg, handler)
 
@@ -59,4 +61,15 @@ func Run() error {
 		return fmt.Errorf("start http server: %w", err)
 	}
 	return nil
+}
+
+func seedUsersTable(db *sqlx.DB) {
+	usersTable := `
+	CREATE TABLE IF NOT EXISTS users (
+		id UUID PRIMARY KEY,
+		name TEXT NOT NULL,
+		email TEXT NOT NULL,
+		password TEXT NOT NULL
+	)`
+	db.MustExec(usersTable)
 }

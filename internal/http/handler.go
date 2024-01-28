@@ -19,6 +19,7 @@ func NewHandler(db *sqlx.DB) http.Handler {
 
 	r.Route("/v1/api", func(r chi.Router) {
 		r.Post("/register", userHandler.Register)
+		r.Post("/login", userHandler.Login)
 	})
 	return r
 }

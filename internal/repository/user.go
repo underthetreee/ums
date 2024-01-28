@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/underthetreee/ums/internal/model"
@@ -17,19 +19,7 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 	}
 }
 
-var schema = `
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    password TEXT NOT NULL
-);
-`
-
 func (r *UserRepository) Create(ctx context.Context, user model.User) error {
-	// temp
-	r.db.MustExec(schema)
-
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
@@ -45,4 +35,15 @@ func (r *UserRepository) Create(ctx context.Context, user model.User) error {
 
 	}
 	return nil
+}
+
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	var user model.User
+	if err := r.db.GetContext(ctx, &user, "SELECT * from users WHERE email = $1", email); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
 }

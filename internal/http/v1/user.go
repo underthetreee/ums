@@ -10,7 +10,8 @@ import (
 )
 
 type UserService interface {
-	Register(ctx context.Context, input model.UserRegisterInput) (string, error)
+	Register(ctx context.Context, input model.RegisterUserParams) (string, error)
+	Login(ctx context.Context, params model.LoginUserParams) (string, error)
 }
 
 type UserHandler struct {
@@ -24,15 +25,18 @@ func NewUserHandler(service UserService) *UserHandler {
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var input model.UserRegisterInput
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	var params model.RegisterUserParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		log.Println(err)
+		return
 	}
-	token, err := h.service.Register(r.Context(), input)
+
+	token, err := h.service.Register(r.Context(), params)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		log.Println(err)
+		return
 	}
 
 	response := map[string]string{"token": token}
@@ -40,5 +44,31 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		log.Println(err)
+		return
+	}
+}
+
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var params model.LoginUserParams
+
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+
+	token, err := h.service.Login(r.Context(), params)
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	response := map[string]string{"token": token}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 }

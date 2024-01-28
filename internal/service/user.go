@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user model.User) error
+	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 }
 
 type UserService struct {
@@ -24,21 +26,51 @@ func NewUserService(repo UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) Register(ctx context.Context, input model.UserRegisterInput) (string, error) {
-	hashedPass, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+func (s *UserService) Register(ctx context.Context, params model.RegisterUserParams) (string, error) {
+	existingUser, err := s.repo.GetUserByEmail(ctx, params.Email)
+	if err != nil {
+		return "", err
+	}
+
+	if existingUser != nil {
+		return "", errors.New("user already exists")
+	}
+
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
 
 	user := model.User{
 		ID:       uuid.New(),
-		Name:     input.Name,
-		Email:    input.Email,
+		Name:     params.Name,
+		Email:    params.Email,
 		Password: string(hashedPass),
 	}
 
 	if err := s.repo.Create(ctx, user); err != nil {
 		return "", err
+	}
+
+	token, err := auth.NewToken(user.ID.String(), 1*time.Hour)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (s *UserService) Login(ctx context.Context, params model.LoginUserParams) (string, error) {
+	user, err := s.repo.GetUserByEmail(ctx, params.Email)
+	if err != nil {
+		return "", err
+	}
+
+	if user == nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(params.Password)); err != nil {
+		return "", errors.New("invalid password")
 	}
 
 	token, err := auth.NewToken(user.ID.String(), 1*time.Hour)
