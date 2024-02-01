@@ -21,7 +21,7 @@ func JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			log.Println("empty token string")
 			return
 		}
@@ -30,7 +30,7 @@ func JWTAuth(next http.Handler) http.Handler {
 		})
 
 		if err != nil || !token.Valid {
-			http.Error(w, "Unathorized", http.StatusUnauthorized)
+			http.Error(w, "unathorized", http.StatusUnauthorized)
 			log.Println(err)
 			return
 		}

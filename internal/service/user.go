@@ -118,6 +118,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, params model.UserProfil
 		Name:  params.Name,
 		Email: params.Email,
 	}
+
 	if err := s.repo.UpdateProfile(ctx, user); err != nil {
 		return err
 	}
