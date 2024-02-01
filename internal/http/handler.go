@@ -27,6 +27,7 @@ func NewHandler(db *sqlx.DB) http.Handler {
 
 			r.Get("/", userHandler.GetProfile)
 			r.Put("/", userHandler.UpdateProfile)
+			r.Delete("/", userHandler.DeleteProfile)
 		})
 	})
 	return r

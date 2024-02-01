@@ -21,7 +21,7 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user model.User) error {
-	_, err := r.db.Exec("INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4)",
+	_, err := r.db.ExecContext(ctx, "INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4)",
 		user.ID, user.Name, user.Email, user.Password)
 	if err != nil {
 		return err
@@ -52,11 +52,20 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.
 }
 
 func (r *UserRepository) UpdateProfile(ctx context.Context, user model.User) error {
-	_, err := r.db.Exec("UPDATE users SET name=$2, email=$3 WHERE id=$1",
+	_, err := r.db.ExecContext(ctx, "UPDATE users SET name=$2, email=$3 WHERE id=$1",
 		user.ID, user.Name, user.Email)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *UserRepository) DeleteProfile(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM users WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }

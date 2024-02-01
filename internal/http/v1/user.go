@@ -14,6 +14,7 @@ type UserService interface {
 	Login(ctx context.Context, params model.LoginUserParams) (string, error)
 	GetProfile(ctx context.Context) (*model.UserProfileParams, error)
 	UpdateProfile(ctx context.Context, user model.UserProfileParams) error
+	DeleteProfile(ctx context.Context) error
 }
 
 type UserHandler struct {
@@ -100,6 +101,13 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.service.UpdateProfile(r.Context(), params); err != nil {
 		http.Error(w, "internal server error", http.StatusBadRequest)
+		log.Println(err)
+	}
+}
+
+func (h *UserHandler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
+	if err := h.service.DeleteProfile(r.Context()); err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		log.Println(err)
 	}
 }
