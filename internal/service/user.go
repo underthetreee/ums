@@ -14,6 +14,7 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user model.User) error
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
 type UserService struct {
@@ -52,7 +53,7 @@ func (s *UserService) Register(ctx context.Context, params model.RegisterUserPar
 		return "", err
 	}
 
-	token, err := auth.NewToken(user.ID.String(), 1*time.Hour)
+	token, err := auth.GenerateToken(user.ID.String(), 1*time.Hour)
 	if err != nil {
 		return "", err
 	}
@@ -73,9 +74,29 @@ func (s *UserService) Login(ctx context.Context, params model.LoginUserParams) (
 		return "", errors.New("invalid password")
 	}
 
-	token, err := auth.NewToken(user.ID.String(), 1*time.Hour)
+	token, err := auth.GenerateToken(user.ID.String(), 1*time.Hour)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
+}
+
+func (s *UserService) GetProfile(ctx context.Context) (*model.UserProfileParams, error) {
+	id, err := auth.GetUserIDFromClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+	user, err := s.repo.GetUserByID(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	userProfile := model.UserProfileParams{
+		Name:  user.Name,
+		Email: user.Email,
+	}
+	return &userProfile, nil
 }

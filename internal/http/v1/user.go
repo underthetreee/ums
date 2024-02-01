@@ -12,6 +12,7 @@ import (
 type UserService interface {
 	Register(ctx context.Context, input model.RegisterUserParams) (string, error)
 	Login(ctx context.Context, params model.LoginUserParams) (string, error)
+	GetProfile(ctx context.Context) (*model.UserProfileParams, error)
 }
 
 type UserHandler struct {
@@ -65,6 +66,22 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]string{"token": token}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+}
+
+func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+	profile, err := h.service.GetProfile(r.Context())
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		log.Println(err)
+	}
+
+	response := map[string]string{"name": profile.Name, "email": profile.Email}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)

@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/jmoiron/sqlx"
+	"github.com/underthetreee/ums/internal/auth"
 	v1 "github.com/underthetreee/ums/internal/http/v1"
 	"github.com/underthetreee/ums/internal/repository"
 	"github.com/underthetreee/ums/internal/service"
@@ -20,6 +21,12 @@ func NewHandler(db *sqlx.DB) http.Handler {
 	r.Route("/v1/api", func(r chi.Router) {
 		r.Post("/register", userHandler.Register)
 		r.Post("/login", userHandler.Login)
+
+		r.Route("/profile", func(r chi.Router) {
+			r.Use(auth.JWT)
+
+			r.Get("/", userHandler.GetProfile)
+		})
 	})
 	return r
 }
