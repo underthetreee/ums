@@ -13,6 +13,7 @@ type UserService interface {
 	Register(ctx context.Context, input model.RegisterUserParams) (string, error)
 	Login(ctx context.Context, params model.LoginUserParams) (string, error)
 	GetProfile(ctx context.Context) (*model.UserProfileParams, error)
+	UpdateProfile(ctx context.Context, user model.UserProfileParams) error
 }
 
 type UserHandler struct {
@@ -87,5 +88,18 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		log.Println(err)
 		return
+	}
+}
+
+func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	var params model.UserProfileParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+	if err := h.service.UpdateProfile(r.Context(), params); err != nil {
+		http.Error(w, "internal server error", http.StatusBadRequest)
+		log.Println(err)
 	}
 }

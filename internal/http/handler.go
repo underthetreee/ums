@@ -23,9 +23,10 @@ func NewHandler(db *sqlx.DB) http.Handler {
 		r.Post("/login", userHandler.Login)
 
 		r.Route("/profile", func(r chi.Router) {
-			r.Use(auth.JWT)
+			r.Use(auth.JWTAuth)
 
 			r.Get("/", userHandler.GetProfile)
+			r.Put("/", userHandler.UpdateProfile)
 		})
 	})
 	return r

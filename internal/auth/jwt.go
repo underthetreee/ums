@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -16,11 +17,12 @@ const (
 	claimsKey  contextKey = "claims"
 )
 
-func JWT(next http.Handler) http.Handler {
+func JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			log.Println("empty token string")
 			return
 		}
 		token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -28,8 +30,8 @@ func JWT(next http.Handler) http.Handler {
 		})
 
 		if err != nil || !token.Valid {
-			fmt.Println(err)
 			http.Error(w, "Unathorized", http.StatusUnauthorized)
+			log.Println(err)
 			return
 		}
 

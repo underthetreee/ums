@@ -15,6 +15,7 @@ type UserRepository interface {
 	Create(ctx context.Context, user model.User) error
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
+	UpdateProfile(ctx context.Context, user model.User) error
 }
 
 type UserService struct {
@@ -99,4 +100,25 @@ func (s *UserService) GetProfile(ctx context.Context) (*model.UserProfileParams,
 		Email: user.Email,
 	}
 	return &userProfile, nil
+}
+
+func (s *UserService) UpdateProfile(ctx context.Context, params model.UserProfileParams) error {
+	id, err := auth.GetUserIDFromClaims(ctx)
+	if err != nil {
+		return err
+	}
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
+	user := model.User{
+		ID:    uuid,
+		Name:  params.Name,
+		Email: params.Email,
+	}
+	if err := s.repo.UpdateProfile(ctx, user); err != nil {
+		return err
+	}
+	return nil
 }
